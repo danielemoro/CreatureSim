@@ -1,6 +1,4 @@
 import java.awt.Color;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 //CELL TYPES
@@ -12,93 +10,178 @@ import java.util.Random;
 //nothing  = 9
 
 public class Cell {
-	protected Map<String, Integer> me;
-	protected Color color;
+	Board board;
 	Random rand;
 	
-	public Cell(int x, int y){
-		me = new HashMap<String, Integer>();
+	//CELL PROPERTIES
+	protected long lastTurn;
+	private long id;
+	private int energy; 
+		protected final int ENERGY_MIN = 0;
+		protected final int ENERGY_MAX = 1000000;		
+	private int x;
+	private int y;
+	private int age;
+	private String type;
+	private String[] canEat;
+	private Color color;
+	
+	
+	public Cell(Board board, int x, int y){
+		this.board = board;
+		id = System.currentTimeMillis();
+		setEnergy(0);
+		setCanEat(new String[]{});
+		setType("nothing");
+		setAge(0);
+		setX(x);
+		setY(y);
 		
-		me.put("energy", 0);
-		me.put("x", x);
-		me.put("y", y);
-		me.put("age", 0);
-		me.put("type", 1);
-		me.put("can_eat", 9);
+		color = Color.WHITE;
+	}
+	
+	public Cell(Board board, int x, int y, long turn){
+		this.board = board;
+		id = System.currentTimeMillis();
+		setEnergy(0);
+		setCanEat(new String[]{});
+		setType("nothing");
+		setAge(0);
+		setX(x);
+		setY(y);
 		
-		color  = Color.WHITE;
+		lastTurn = turn;
+		
+		color = Color.WHITE;
 	}
 	
-	public float getEnergy(){
-		return me.get("energy");
+	public void next(long turns){
+		//do nothing;
 	}
 	
-	public int getAge(){
-		return me.get("age");
+	public int getEnergy() {
+		return energy;
+	}
+
+	public void setEnergy(int energy) {
+		if(energy < ENERGY_MIN){
+			board.killCell(this);
+		} else if (energy > ENERGY_MAX){
+			this.energy = ENERGY_MAX;
+		} else {
+			this.energy = energy;
+		}
 	}
 	
-	public Color getColor(){
+	public void changeEnergy(int change_in_energy) {
+		int newEnergy = this.getEnergy() + change_in_energy;
+		
+		this.setEnergy(newEnergy);
+	}
+	
+	public void isDead() {
+		if(this.energy < ENERGY_MIN){
+			board.killCell(this);
+		}
+	}
+
+	public int getX() {
+		return x;
+	}
+
+	public void setX(int x) {
+		if(x >= board.getWidth()){
+			this.x = board.getWidth()-1;
+		} else  if (x < 0){
+			this.x = 0;
+		} else {
+			this.x = x;
+		}
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		if(y >= board.getWidth()){
+			this.y = board.getWidth()-1;
+		} else  if (y < 0){
+			this.y = 0;
+		} else {
+			this.y = y;
+		}
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+	
+	public void increaseAge() {
+		this.age++;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		if(type.equals("wall") || type.equals("plant") || type.equals("animal") || type.equals("carnivore") || type.equals("nothing") ) {
+			this.type = type;
+		} else {
+			throw new IllegalArgumentException("Invalid Type");
+		}
+	}
+
+	public String[] getCanEat() {
+		return canEat;
+	}
+
+	public void setCanEat(String[] can_eat) {
+		boolean everythingGood = true;
+		for(String curr: can_eat){
+			if(curr.equals("wall") || curr.equals("plant") || curr.equals("animal") || curr.equals("carnivore") || curr.equals("nothing") ) {
+				//all good
+			} else {
+				everythingGood = false;
+			}
+		}
+		
+		if(everythingGood){
+			this.canEat = can_eat;
+		} else {
+			throw new IllegalArgumentException("Invalid Type to Eat");
+		}
+		
+	}
+	
+	public boolean canIEat(String[] source, String destination){
+		for(String curr : source){
+			if(curr.equals(destination)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	public Color getColor() {
 		return color;
 	}
-	
-	public String getType(){
-		switch (me.get("type")) {
-			case 0:
-				return "wall";
-			case 1:
-				return "empty";
-			case 2:
-				return "plant";
-			case 3:
-				return "animal";
-			case 4:
-				return "carnivore";
-		}
-		
-		return "n/a";
+
+	public void setColor(Color color) {
+		this.color = color;
 	}
 	
-	public int getTypeInt(){
-		return me.get("type");
+	public long getID(){
+		return this.id;
 	}
-	
-	public Board next(Board currBoard){
-		return currBoard;
-	}
-	
-	public int getX(){
-		return me.get("x");
-	}
-	
-	public int getY(){
-		return me.get("y");
-	}
-	
-	public boolean isDead(){
-		return (me.get("energy") < 0);
-	}
-	
-	public void highlight(){
-		color = Color.RED;
-	}
-	
-	public void setLocation(int x, int y){
-		me.replace("x", x);
-		me.replace("y", y);
-	}
-	
-	protected int limitStats(int original, int min, int max){
-		if(original > max){
-			original = max;
-		}
-		if(original < min){
-			original = min;
-		}
-		
-		return original;
-	}
-	
+
 	public String toString(){
-		return me.toString();
+		return "NEED TO IMPLEMENT";
 	}
 }

@@ -11,7 +11,7 @@ public class Board {
 		//fill in board with empty cells
 		for(int col = 0; col < width; col++){
 			for(int row = 0; row < heigth; row++){
-				board[col][row] = new Cell(col, row);
+				board[col][row] = new Cell(this, col, row);
 			}
 		}
 	}
@@ -42,14 +42,18 @@ public class Board {
 	
 	public Cell getCell(int i){
 		if(i > width*heigth)
-			return new Wall(width, heigth);
+			return new Wall(this, width, heigth);
 		
 		return board[i % width][i / heigth];
 	}
 	
+	public void killCell(Cell cell){
+		this.setCell(cell.getX(), cell.getY(), new Cell(this, cell.getX(), cell.getY()));
+	}
+	
 	public Cell getCell(int x, int y){
 		if(x >= width || x < 0 || y >= heigth || y < 0){
-			return new Wall(x, y);
+			return new Wall(this, x, y);
 		} else {			
 			return board[x][y];
 		}
@@ -76,7 +80,7 @@ public class Board {
 	public void move(int origX, int origY, int destX, int destY){
 		//System.out.println("moving: " + board[origX][origY].getType() + " to " + board[destX][destY].getType());
 		board[destX][destY] = board[origX][origY];
-		board[origX][origY] = new Cell(origX, origY);
+		board[origX][origY] = new Cell(this, origX, origY);
 	}
 	
 	public Board clone(){

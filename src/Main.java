@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 
 public class Main {
 
-	public static Board board;
+	protected static Board board;
 	public static long systemTime;
 	public static double deltaTime = 300;
 	public static long turns;
@@ -19,20 +19,20 @@ public class Main {
 		int dimensions = 40;
 		rand = new Random();
 		board = new Board(dimensions, dimensions);
-		board.setCell(4, 4, new Plant(4, 4));
+		board.setCell(10, 10, new Plant(board, 10, 10, 0));
 
 		for (int i = 0; i < dimensions/1.5; i++) {
 			int ranX = rand.nextInt(board.getWidth());
 			int ranY = rand.nextInt(board.getHeigth());
-//			if (i <= dimensions/4) {
+			//if (i <= dimensions/4) {
 				for (int x = 0; x < dimensions/8; x++){
 					for(int y = 0; y < dimensions/8; y++){
-						board.setCell(ranX + x, ranY + y, new Wall(0, 0));
+						board.setCell(ranX + x, ranY + y, new Wall(board, 0, 0));
 					}
 			} //else {
-//				for (int j = 0; j < dimensions/4; j++)
-//					board.setCell(ranX + j, ranY + j, new Wall(0, 0));
-//			}
+				//for (int j = 0; j < dimensions/4; j++)
+				//	board.setCell(ranX + j, ranY + j, new Wall(0, 0));
+			//}
 		}
 
 		// draw
@@ -47,7 +47,6 @@ public class Main {
 		long oldTime = getTime();
 		systemTime = getTime();
 		turns = 0;
-		Board nextBoard = board.clone();
 		// runs every delta time
 		while (turns < 999999) {
 			oldTime = getTime();
@@ -55,9 +54,7 @@ public class Main {
 				systemTime = getTime();
 			}
 			turns++;
-
-			board = nextBoard.clone();
-
+			
 			// System.out.println(Runtime.getRuntime().freeMemory());
 
 			// draw
@@ -67,26 +64,26 @@ public class Main {
 
 			// UPDATE BOARD
 			for (int i = 0; i < board.getNumCells(); i++) {
-				nextBoard = board.getCell(i).next(nextBoard);
+				board.getCell(i).next(turns);
 			}
 
 			// Make animal on turn 30
 			if (turns == 5) {
-				nextBoard.setCell(3, 3, new Animal(3, 3));
+				board.setCell(10, 10, new Animal(board, 10, 10, turns));
 			}
 
-			if (turns == -1) {
-				System.out.println("=============================================\nKilling all plants");
-				int counter = 0;
-				for (int i = 0; i < nextBoard.getNumCells(); i++) {
-					Cell cell = nextBoard.getCell(i);
-					if (cell.getTypeInt() == 2) {
-						nextBoard.setCell(i, new Cell(0, 0));
-						counter++;
-					}
-				}
-				System.out.println("Killed " + counter);
-			}
+//			if (turns == -1) {
+//				System.out.println("=============================================\nKilling all plants");
+//				int counter = 0;
+//				for (int i = 0; i < nextBoard.getNumCells(); i++) {
+//					Cell cell = nextBoard.getCell(i);
+//					if (cell.getTypeInt() == 2) {
+//						nextBoard.setCell(i, new Cell(0, 0));
+//						counter++;
+//					}
+//				}
+//				System.out.println("Killed " + counter);
+//			}
 
 			boolean isReadable = true;
 			if (isReadable) {
@@ -100,16 +97,16 @@ public class Main {
 
 				for (int i = 0; i < board.getNumCells(); i++) {
 					Cell cell = board.getCell(i);
-					if (cell.getTypeInt() == 2) { // if is plant
-						sumPlant = sum(sumPlant, cell.me);
+					if (cell.getType().equals("plant")) { // if is plant
+						//sumPlant = sum(sumPlant, cell.me);
 						numPlants++;
 					}
-					if (cell.getTypeInt() == 3) { // if is animal
-						sumAnimal = sum(sumAnimal, cell.me);
+					if (cell.getType().equals("animal")) { // if is animal
+						//sumAnimal = sum(sumAnimal, cell.me);
 						numAnimals++;
 					}
-					if (cell.getTypeInt() == 4) { // if is carnivore
-						sumCarnivore = sum(sumCarnivore, cell.me);
+					if (cell.getType().equals("carnivore")) { // if is carnivore
+						//sumCarnivore = sum(sumCarnivore, cell.me);
 						numCarnivores++;
 					}
 

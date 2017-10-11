@@ -1,184 +1,234 @@
 import java.awt.Color;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 public class Animal extends Cell {
 
-	private int TEETH_NEEDED_CARNIVORE = 100;
-	
-	Random rand;
-	
-	
-	
-	/**
-	 * @param me - Map<String, Integer>
-	 */
-	public Animal (Map<String, Integer> me) {
-		super(me.get("x"), me.get("y"));
+	//ANIMAL PROPERTIES
+	private int energyStart;
+	private int energyPerTurn;
+		protected final int ENERGY_PER_TURN_MIN = -1000000;
+		protected final int ENERGY_PER_TURN_MAX = -10;
+	private int energyNeededMove;
+		protected final int ENERGY_NEEDED_MOVE_MIN = 0;
+		protected final int ENERGY_NEEDED_MOVE_MAX = Integer.MAX_VALUE;
+	private int energyUsedMove;
+		protected final int ENERGY_USED_MOVE_MIN = -1000000;
+		protected final int ENERGY_USED_MOVE_MAX = -10;
+	private int energyNeededSplit;
+		protected final int ENERGY_NEEDED_SPLIT_MIN = 0;
+		protected final int ENERGY_NEEDED_SPLIT_MAX = Integer.MAX_VALUE;
+	private int teeth;
+		private final int TEETH_NEEDED_CARNIVORE = 100;
+		private final int TEETH_MIN = -999;
+		private final int TEETH_MAX = 999;
 		
-		//check that map is correct
-		Set<String> correctSet = new HashSet<String>();
-		correctSet.add("x");
-		correctSet.add("y");
-		correctSet.add("energy_start");
-		correctSet.add("energy_per_turn");
-		correctSet.add("energy_needed_move");
-		correctSet.add("energy_used_move");
-		correctSet.add("energy_needed_split");
-		correctSet.add("teeth");
-		correctSet.add("age");
-		correctSet.add("type");
-		correctSet.add("can_eat");
-		correctSet.add("energy");
+	
+	public Animal (Board board, int x, int y, long turn) {
+		super(board, x, y, turn);
 		
-		if(!me.keySet().equals(correctSet)){
-			throw new IllegalArgumentException();
-		}
-		
-		//initialize stats
-		this.me.putAll(me);
-		
-		color = calculateColor();
+		this.setEnergyStart(3000);
+		this.setEnergy(this.getEnergyStart());
+		this.setEnergyPerTurn(-100);
+		this.setEnergyNeededMove(300);
+		this.setEnergyUsedMove(-100);
+		this.setEnergyNeededSplit(4000);
+		this.setTeeth(0);
+		this.setCanEat(new String[]{"nothing", "plant"});
+		this.setType("animal");
+		this.setColor(calculateColor());
+	
 		rand = new Random();
 	}
 	
-	/**
-	 * Simple constructor
-	 * @param x
-	 * @param y
-	 */
-	public Animal (int x, int y) {
-		super(x, y);
-		
-		me.put("energy_start", 3000);
-		me.put("energy_per_turn", -250);
-		me.put("energy_needed_move", 250);
-		me.put("energy_used_move", -200);
-		me.put("energy_needed_split", 900);
-		me.put("teeth", 0);
-		me.put("can_eat", 12);
-		me.put("type", 3);
-		
-		me.replace("energy", me.get("energy_start"));
-		
-		color = calculateColor();
-		rand = new Random();
-	}
-	
-	public Board next(Board currBoard){
-		color = calculateColor();
-		Board nextBoard = currBoard;
-		
-		//check if dead
-		if(isDead()){
-			nextBoard.setCell(me.get("x"), me.get("y"), new Cell(me.get("x"), me.get("y")));
-			return nextBoard;
-		} else {
-			me.replace("age", me.get("age")+1);
-		}
-		
-		if(me.get("energy") < 0){
-			System.out.println("================================/nERROR-NEGATIVE-ENERGY-ERROR\n========================================");
-			while(true){}
-		}
-		
-		//update energy based on turn
-		me.replace("energy", me.get("energy") + me.get("energy_per_turn"));
-		
-		//move
-		if(me.get("energy") >= me.get("energy_needed_move")){
-			nextBoard = move(currBoard);
-			me.replace("energy", me.get("energy") + me.get("energy_used_move"));;
-		}
-		
-		//split
-		if(me.get("energy") >= me.get("energy_needed_split")){
-			nextBoard = split(nextBoard);
-		}
+	public void next(long turn){
+		if(turn > lastTurn){ //check if the turn has advanced
+			lastTurn = turn;
+			increaseAge();
+			this.isDead();
 			
-		return nextBoard;
+			//update energy based on turn
+			this.changeEnergy(this.getEnergyPerTurn());
+			
+			//move
+			if(this.getEnergy() > this.getEnergyNeededMove()){
+				move();
+				this.changeEnergy(this.getEnergyUsedMove());
+			}
+			
+			//split
+			if(getEnergy() >= getEnergyNeededSplit()){
+				split();
+			}
+			
+			this.setColor(calculateColor());
+		} 
 	}
 	
-	private Board move(Board board){
-		int destX = me.get("x") + (rand.nextInt(3)-1);
-		int destY =  me.get("y") + (rand.nextInt(3)-1);
-		if(canEat(board, destX, destY)){
-			me.replace("energy", (int) (me.get("energy") + board.getCell(destX, destY).getEnergy()));
-			board.move(me.get("x"), me.get("y"), destX, destY);
-			me.put("x", destX);
-			me.put("y", destY);
+	private void move(){
+		int destX = getX() + (rand.nextInt(3)-1);
+		int destY =  getY() + (rand.nextInt(3)-1);
+		System.out.println("X: " + getX() + "  Y: " + getY());
+		System.out.println("destX:  " + destX + "  destY: " + destY);
+		
+		if(canIEat(this.getCanEat(), board.getCell(destX, destY).getType())){
+			changeEnergy(board.getCell(destX, destY).getEnergy());
+			board.move(getX(), getY(), destX, destY);
+			setX(destX);
+			setY(destY);
 		}
 		
-		return board;
 	}
 	
-	private Board split(Board board){
+	private void split(){
 		boolean didSplit = false;
 		int timesTried = 0;
 		while(!didSplit && timesTried < 10){
 			timesTried++;
-			int destX = me.get("x") + (rand.nextInt(3)-1);
-			int destY = me.get("y") + (rand.nextInt(3)-1);
-			if(canEat(board, destX, destY)){
-				me.replace("energy", (int) (me.get("energy") + board.getCell(destX, destY).getEnergy()));
+			int destX = getX() + (rand.nextInt(3)-1);
+			int destY = getY() + (rand.nextInt(3)-1);
+			if(canIEat(this.getCanEat(), board.getCell(destX, destY).getType())){
+				changeEnergy(board.getCell(destX, destY).getEnergy());
 				
-				//make new plant with different parameters
-				Map<String, Integer> childStats = new HashMap<String, Integer>();
+				Animal child = new Animal(board, destX, destY, lastTurn);
 				
-				childStats.putAll(me);
-				
-				childStats.replace("x", destX);
-				childStats.replace("y", destY);
-				childStats.replace("energy_start", me.get("energy_start") + (rand.nextInt(51)-25));
-				childStats.replace("energy_per_turn", me.get("energy_per_turn") + (rand.nextInt(51)-25));
-				childStats.replace("energy_needed_move", me.get("energy_needed_move") + (rand.nextInt(51)-25));
-				childStats.replace("energy_used_move", me.get("energy_used_move") + (rand.nextInt(51)-25));
-				childStats.replace("energy_needed_split", me.get("energy_needed_split") + (rand.nextInt(51)-25));
-				childStats.replace("teeth", me.get("teeth") + (rand.nextInt(51)-25));
-				
-				//check if is carnivore
-				if(childStats.get("teeth") >= TEETH_NEEDED_CARNIVORE){
-					childStats.put("can_eat", 13);
-					childStats.put("type", 4);
-					//childStats.replace("energy_per_turn", limitStats(childStats.get("energy_per_turn"), -99999, -300));
-				}
-				
-				//check if stats are reasonable
-				childStats.replace("energy_start", limitStats(childStats.get("energy_start"), 1000, 99999));
-				childStats.replace("energy_per_turn", limitStats(childStats.get("energy_per_turn"), -99999, -200));
-				childStats.replace("energy_used_move", limitStats(childStats.get("energy_used_move"), -99999, -200));
-				
-				me.put("energy", me.get("energy") - childStats.get("energy_start"));
-				
-				childStats.replace("energy", me.get("energy_start"));
-				Animal child = new Animal(childStats); 
-				board.setCell(destX, destY, child); 
+				child.setEnergy(this.getEnergyStart());
+				child.setEnergyStart(this.getEnergyStart() + (rand.nextInt(50)-25));
+				child.setEnergyPerTurn(this.getEnergyPerTurn() + (rand.nextInt(50)-25));
+				child.setEnergyNeededMove(this.getEnergyNeededMove() + (rand.nextInt(50)-25));
+				child.setEnergyUsedMove(this.getEnergyUsedMove() + (rand.nextInt(50)-25));
+				child.setEnergyNeededSplit(this.getEnergyNeededSplit() + (rand.nextInt(50)-25));
+				child.setTeeth(this.getTeeth() + (rand.nextInt(50)-25));
+					
+				this.changeEnergy(-this.getEnergyStart());
+				board.setCell(child.getX(), child.getY(), child);
 				
 				didSplit = true;
 			}
 		}
-		
-		return board;
 	}
 	
 	private Color calculateColor(){
-		float brightness = Math.min(me.get("energy")/(me.get("energy_start")*1.2f),1);
+		float brightness = Math.min(getEnergy()/(getEnergyStart()*1.2f),1);
 		brightness = Math.abs(brightness);
 		brightness = Math.min(brightness, 1);
 		Color newColor = new Color(brightness,brightness,0.1f);
 		
 		//red if carnivore
-		if(me.get("teeth") >= TEETH_NEEDED_CARNIVORE){
+		if(this.getType().equals("carnivore")){
 			newColor = new Color(brightness,0.1f,0.1f);
 		}
 		
 		return newColor;
 	}
+
+	public int getEnergyStart() {
+		return energyStart;
+	}
+
+	public void setEnergyStart(int energyStart) {
+		if(energyStart < super.ENERGY_MIN){
+			this.energyStart = super.ENERGY_MIN;
+		} else if (energyStart > super.ENERGY_MAX){
+			this.energyStart = super.ENERGY_MAX;
+		} else {
+			this.energyStart = energyStart;
+		}
+	}
+
+	public int getEnergyPerTurn() {
+		return energyPerTurn;
+	}
+
+	public void setEnergyPerTurn(int energyPerTurn) {
+		if(energyPerTurn < ENERGY_PER_TURN_MIN){
+			this.energyPerTurn = ENERGY_PER_TURN_MIN;
+		} else if (energyPerTurn > ENERGY_PER_TURN_MAX){
+			this.energyPerTurn = ENERGY_PER_TURN_MAX;
+		} else {
+			this.energyPerTurn = energyPerTurn;
+		}
+	}
+
+	public int getEnergyNeededMove() {
+		return energyNeededMove;
+	}
+
+	public void setEnergyNeededMove(int energyNeededMove) {
+		if(energyNeededMove < ENERGY_NEEDED_MOVE_MIN){
+			this.energyNeededMove = ENERGY_NEEDED_MOVE_MIN;
+		} else if (energyNeededMove > ENERGY_NEEDED_MOVE_MAX){
+			this.energyNeededMove = ENERGY_NEEDED_MOVE_MAX;
+		} else {
+			this.energyNeededMove = energyNeededMove;
+		}
+	}
+
+	public int getEnergyUsedMove() {
+		return energyUsedMove;
+	}
+
+	public void setEnergyUsedMove(int energyUsedMove) {
+		if(energyUsedMove < ENERGY_USED_MOVE_MIN){
+			this.energyUsedMove = ENERGY_USED_MOVE_MIN;
+		} else if (energyUsedMove > ENERGY_USED_MOVE_MAX){
+			this.energyUsedMove = ENERGY_USED_MOVE_MAX;
+		} else {
+			this.energyUsedMove = energyUsedMove;
+		}
+	}
+
+	public int getEnergyNeededSplit() {
+		return energyNeededSplit;
+	}
+
+	public void setEnergyNeededSplit(int energyNeededSplit) {
+		if(energyNeededSplit < ENERGY_NEEDED_SPLIT_MIN){
+			this.energyNeededSplit = ENERGY_NEEDED_SPLIT_MIN;
+		} else if (energyNeededSplit > ENERGY_NEEDED_SPLIT_MAX){
+			this.energyNeededSplit = ENERGY_NEEDED_SPLIT_MAX;
+		} else {
+			this.energyNeededSplit = energyNeededSplit;
+		}
+	}
+
+	public int getTeeth() {
+		return teeth;
+	}
+
+	public void setTeeth(int teeth) {
+		if(teeth < TEETH_MIN){
+			this.teeth = TEETH_MIN;
+		} else if (teeth > TEETH_MAX){
+			this.teeth = TEETH_MAX;
+		} else {
+			this.teeth = teeth;
+		}
+		
+		//check if is carnivore
+		if(this.teeth >= TEETH_NEEDED_CARNIVORE){
+			this.setCanEat(new String[]{"nothing", "animal"});
+			this.setType("carnivore");
+		}
+		if(this.teeth <= TEETH_NEEDED_CARNIVORE){
+			this.setCanEat(new String[]{"nothing", "plant"});
+			this.setType("animal");
+		}
+	}
 	
-	private boolean canEat(Board board, int destX, int destY){
-		return Integer.toString(me.get("can_eat")).contains(Integer.toString(board.getCell(destX, destY).getTypeInt()));
+	public String toString(){
+		String out = "";
+		
+		out += "Energy: " + getEnergy();
+		out += "\nAge: " + getAge();
+		//out += "\nType: " + getType();
+		out += "\n-------------------";
+		out += "\nEnergy per turn:" + getEnergyPerTurn();
+		out += "\nEnergy needed move:" + getEnergyNeededMove();
+		out += "\nEnergy used move:" + getEnergyUsedMove();
+		out += "\nEnergy split: " + getEnergyNeededSplit();
+		out += "\nEnergy of child:" + getEnergyStart();
+		out += "\nTeeth: " + getTeeth();
+		
+		return out;
 	}
 }

@@ -1,63 +1,33 @@
 import java.awt.Color;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 public class Plant extends Cell{
 	
-
-	/**
-	 * @param me - Map<String, Integer>
-	 */
-	public Plant(Map<String, Integer> me){//int x, int y, int energy_start, int energy_per_turn, int energy_needed_grow){
-		super(me.get("x"), me.get("y"));
+	//PLANT PROPERTIES
+	private int energyStart;
+	private int energyPerTurn;
+		protected final int ENERGY_PER_TURN_MIN = 0;
+		protected final int ENERGY_PER_TURN_MAX = 500;
+	private int energyNeededGrow;
+		protected final int ENERGY_NEEDED_GROW_MIN = 0;
+		protected final int ENERGY_NEEDED_GROW_MAX = Integer.MAX_VALUE;
 		
-		//check that map is correct
-		Set<String> correctSet = new HashSet<String>();
-		correctSet.add("x");
-		correctSet.add("y");
-		correctSet.add("energy_start");
-		correctSet.add("energy_per_turn");
-		correctSet.add("energy_needed_grow");
-		correctSet.add("age");
-		correctSet.add("type");
-		correctSet.add("can_eat");
-		correctSet.add("energy");
+	public Plant(Board board, int x, int y, long turn){
+		super(board, x, y, turn);
 		
-		if(!me.keySet().equals(correctSet)){
-			throw new IllegalArgumentException();
-		}
-		
-		//initialize stats
-		this.me.putAll(me);
-		
-		color = calculateColor();
-		rand = new Random();
-	}
+		this.setEnergyStart(100);
+		this.setEnergy(this.getEnergyStart());
+		this.setEnergyPerTurn(10);
+		this.setEnergyNeededGrow(120);
+		this.setCanEat(new String[]{"nothing"});
+		this.setType("plant");
+		this.setColor(calculateColor());
 	
-	/**
-	 * Simple constructor
-	 * @param x
-	 * @param y
-	 */
-	public Plant(int x, int y){
-		super(x, y);
-		
-		me.put("energy_start", 100);
-		me.put("energy_per_turn", 10);
-		me.put("energy_needed_grow", 120);
-		me.put("can_eat", 1);
-		me.put("type", 2);
-		me.replace("energy", me.get("energy_start"));
-		
-		color = calculateColor();
 		rand = new Random();
 	}
 	
 	private Color calculateColor(){
-		float brightness = Math.min(me.get("energy")/(me.get("energy_start")*5f),0.6f);
+		float brightness = Math.min(this.getEnergy()/(this.getEnergyStart()*5f),0.6f);
 		brightness = Math.abs(brightness);
 		brightness = Math.min(brightness, 1f);
 		
@@ -65,57 +35,43 @@ public class Plant extends Cell{
 		return newColor;
 	}
 	
-	public Board next(Board nextBoard){
-		
-		color = calculateColor();
-		
-		if(isDead()){
-			nextBoard.setCell(me.get("x"), me.get("y"), new Cell(me.get("x"), me.get("y")));
-//			return nextBoard;
-		} else {
-			me.replace("age", me.get("age")+1);
-		}
-		
-		//update energy based on turn
-		me.replace("energy", me.get("energy") + me.get("energy_per_turn"));
-		
-		//grow
-		if(me.get("energy") > me.get("energy_needed_grow")){			
-			if(grow(nextBoard)){
-				me.replace("energy", me.get("energy") - me.get("energy_start"));
-			}
-		}
+	public void next(long turn){
+		if(turn > lastTurn){ //check if the turn has advanced
+			lastTurn = turn;
+			increaseAge();
+			this.isDead();
 			
-		return nextBoard;
+			//update energy based on turn
+			this.changeEnergy(this.getEnergyPerTurn());
+			
+			//grow
+			if(this.getEnergy() > this.getEnergyNeededGrow()){			
+				if(grow()){
+					this.changeEnergy(-this.getEnergyStart());
+				}
+			}
+
+			this.setColor(calculateColor());
+		}		
 	}
 	
-	private boolean grow(Board nextBoard){
+	
+	private boolean grow(){
 		boolean didGrow = false;
 		
 		for(int xDelta = -1; xDelta < 2; xDelta++){
 			for(int yDelta = -1; yDelta < 2; yDelta++){
-				if(nextBoard.getCell(me.get("x") + xDelta, me.get("y") + yDelta).getTypeInt() == me.get("can_eat")){
+				int currX = this.getX() + xDelta;
+				int currY = this.getY() + yDelta;
+				if(this.canIEat(this.getCanEat(), board.getCell(currX, currY).getType())){					
+					Plant child = new Plant(board, currX, currY, lastTurn);
+					child.setEnergy(this.getEnergyStart());
+					child.setEnergyStart(this.getEnergyStart() + (rand.nextInt(50)-25));
+					child.setEnergyPerTurn(this.getEnergyPerTurn() + (rand.nextInt(50)-25));
+					child.setEnergyNeededGrow(this.getEnergyNeededGrow() + (rand.nextInt(50)-25));
 					
-					//make new plant with different parameters
-					Map<String, Integer> childStats = new HashMap<String, Integer>();
+					board.setCell(child.getX(), child.getY(), child);
 					
-					childStats.putAll(me);
-					
-					childStats.replace("x", me.get("x") + xDelta);
-					childStats.replace("y", me.get("y") + yDelta);
-					childStats.replace("energy", me.get("energy_start"));
-					childStats.replace("age", 0);
-					childStats.replace("energy_start", me.get("energy_start") + (rand.nextInt(51)-25));
-					childStats.replace("energy_per_turn", me.get("energy_per_turn") + (rand.nextInt(51)-25));
-					childStats.replace("energy_needed_grow", me.get("energy_needed_grow") + (rand.nextInt(51)-25));
-					
-					//check if stats are reasonable
-					childStats.replace("energy_start", limitStats(childStats.get("energy_start"), 10, 99999));
-					childStats.replace("energy_per_turn", limitStats(childStats.get("energy_per_turn"), 0, 100));
-					
-					Plant child = new Plant(childStats); 
-					
-					nextBoard.setCell(me.get("x") + xDelta, me.get("y") + yDelta, child); 
 					didGrow = true;
 				}
 			}
@@ -124,19 +80,61 @@ public class Plant extends Cell{
 		return didGrow;
 	}
 
-	public int get_energy_start() {
-		return me.get("energy_start");
+	public int getEnergyStart() {
+		return energyStart;
 	}
-	
-	public int get_energy_per_turn() {
-		return me.get("energy_per_turn");
+
+	public void setEnergyStart(int energyStart) {
+		if(energyStart < super.ENERGY_MIN){
+			this.energyStart = super.ENERGY_MIN;
+		} else if (energyStart > super.ENERGY_MAX){
+			this.energyStart = super.ENERGY_MAX;
+		} else {
+			this.energyStart = energyStart;
+		}
 	}
-	
-	public int get_energy_needed_grow() {
-		return me.get("energy_needed_grow");
+
+	public int getEnergyPerTurn() {
+		return energyPerTurn;
+	}
+
+	public void setEnergyPerTurn(int energyPerTurn) {
+		if(energyPerTurn < ENERGY_PER_TURN_MIN){
+			this.energyPerTurn = ENERGY_PER_TURN_MIN;
+		} else if (energyPerTurn > ENERGY_PER_TURN_MAX){
+			this.energyPerTurn = ENERGY_PER_TURN_MAX;
+		} else {
+			this.energyPerTurn = energyPerTurn;
+		}
+	}
+
+	public int getEnergyNeededGrow() {
+		return energyNeededGrow;
+	}
+
+	public void setEnergyNeededGrow(int energyNeededGrow) {
+		if(energyNeededGrow < ENERGY_NEEDED_GROW_MIN){
+			this.energyNeededGrow = ENERGY_NEEDED_GROW_MIN;
+		} else if (energyNeededGrow > ENERGY_NEEDED_GROW_MAX){
+			this.energyNeededGrow = ENERGY_NEEDED_GROW_MAX;
+		} else {
+			this.energyNeededGrow = energyNeededGrow;
+		}
 	}
 	
 	public String toString(){
-		return me.toString();
+		String out = "";
+		
+		out += "Energy: " + getEnergy();
+		out += "\nAge: " + getAge();
+		//out += "\nType: " + getType();
+		out += "\n-------------------";
+		out += "\nEnery per turn:" + getEnergyPerTurn();
+		out += "\nEnery grow:" + getEnergyNeededGrow();
+		out += "\nEnery of child:" + getEnergyStart();
+		
+		return out;
 	}
+	
+
 }

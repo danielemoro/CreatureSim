@@ -94,10 +94,10 @@ public class GUIboard extends JPanel {
 //		info += ("Start Energy: " + animal.ENERGY_AT_START + "</html>");
 //	}
 		String info = cell.toString();
-		info = info.substring(1, info.length()-1);
 		info = "<html>" + info;
-		info = info.replace(",", "<br>");
-		info = info.replace("=", ":     ");
+		info = info.replace("\n", "<br>");
+		//info = info.replace(",", "<br>");
+		//info = info.replace("=", ":     ");
 		info = info + "</html>";
 		
 		JLabel infoLabel = new JLabel(info);
