@@ -129,11 +129,24 @@ public class Plant extends Cell{
 		out += "\nAge: " + getAge();
 		//out += "\nType: " + getType();
 		out += "\n-------------------";
-		out += "\nEnery per turn:" + getEnergyPerTurn();
-		out += "\nEnery grow:" + getEnergyNeededGrow();
-		out += "\nEnery of child:" + getEnergyStart();
+		out += "\nEnergy per turn:" + getEnergyPerTurn();
+		out += "\nEnergy grow:" + getEnergyNeededGrow();
+		out += "\nEnergy of child:" + getEnergyStart();
 		
 		return out;
+	}
+	
+	public int[] getDNA(){
+		int dna[] = {getEnergy(), getAge(), getEnergyPerTurn(), getEnergyNeededGrow(), getEnergyStart()};
+		return dna;
+	}
+	
+	public static String[] getDNALabel(){
+		return new String[]{"Energy", "Age", "Energy per turn", "Energy grow", "Energy of child"};
+	}
+	
+	public static int[] getDNAEmpty(){
+		return new int[]{0, 0, 0, 0, 0};
 	}
 	
 

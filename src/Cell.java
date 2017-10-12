@@ -184,4 +184,17 @@ public class Cell {
 	public String toString(){
 		return "NEED TO IMPLEMENT";
 	}
+	
+	public int[] getDNA(){
+		int dna[] = {getEnergy(), getAge()};
+		return dna;
+	}
+	
+	public static String[] getDNALabel(){
+		return new String[]{"Energy", "Age"};
+	}
+	
+	public static int[] getDNAEmpty(){
+		return new int[]{0, 0};
+	}
 }

@@ -19,21 +19,9 @@ public class Main {
 		int dimensions = 40;
 		rand = new Random();
 		board = new Board(dimensions, dimensions);
-		board.setCell(10, 10, new Plant(board, 10, 10, 0));
+		board.setCell(1, 1, new Plant(board, 1, 1, 0));
 
-		for (int i = 0; i < dimensions/1.5; i++) {
-			int ranX = rand.nextInt(board.getWidth());
-			int ranY = rand.nextInt(board.getHeigth());
-			//if (i <= dimensions/4) {
-				for (int x = 0; x < dimensions/8; x++){
-					for(int y = 0; y < dimensions/8; y++){
-						board.setCell(ranX + x, ranY + y, new Wall(board, 0, 0));
-					}
-			} //else {
-				//for (int j = 0; j < dimensions/4; j++)
-				//	board.setCell(ranX + j, ranY + j, new Wall(0, 0));
-			//}
-		}
+		drawWalls(dimensions);
 
 		// draw
 		JFrame frame = new JFrame("CreatureSim");
@@ -49,16 +37,15 @@ public class Main {
 		turns = 0;
 		// runs every delta time
 		while (turns < 999999) {
+			//TIME
 			oldTime = getTime();
 			while (systemTime - oldTime < deltaTime) {
 				systemTime = getTime();
 			}
 			turns++;
-			
-			// System.out.println(Runtime.getRuntime().freeMemory());
 
-			// draw
-			if(turns % 1 == 0){
+			//DRAW
+			if (turns % 1 == 0) {
 				guiboard.createGridPanel(board);
 			}
 
@@ -69,112 +56,144 @@ public class Main {
 
 			// Make animal on turn 30
 			if (turns == 5) {
-				board.setCell(10, 10, new Animal(board, 10, 10, turns));
+				board.setCell(1, 1, new Animal(board, 1, 1, turns));
 			}
 
-//			if (turns == -1) {
-//				System.out.println("=============================================\nKilling all plants");
-//				int counter = 0;
-//				for (int i = 0; i < nextBoard.getNumCells(); i++) {
-//					Cell cell = nextBoard.getCell(i);
-//					if (cell.getTypeInt() == 2) {
-//						nextBoard.setCell(i, new Cell(0, 0));
-//						counter++;
-//					}
-//				}
-//				System.out.println("Killed " + counter);
-//			}
+			//if (turns == 100) killAllPlants();
 
-			boolean isReadable = true;
-			if (isReadable) {
-				Map<String, Integer> sumPlant = new HashMap<String, Integer>();
-				Map<String, Integer> sumAnimal = new HashMap<String, Integer>();
-				Map<String, Integer> sumCarnivore = new HashMap<String, Integer>();
+			printToConsole();
 
-				int numPlants = 0;
-				int numAnimals = 0;
-				int numCarnivores = 0;
-
-				for (int i = 0; i < board.getNumCells(); i++) {
-					Cell cell = board.getCell(i);
-					if (cell.getType().equals("plant")) { // if is plant
-						//sumPlant = sum(sumPlant, cell.me);
-						numPlants++;
-					}
-					if (cell.getType().equals("animal")) { // if is animal
-						//sumAnimal = sum(sumAnimal, cell.me);
-						numAnimals++;
-					}
-					if (cell.getType().equals("carnivore")) { // if is carnivore
-						//sumCarnivore = sum(sumCarnivore, cell.me);
-						numCarnivores++;
-					}
-
-				}
-
-				System.out.println("------ TURN " + turns + " ----------------------------------");
-				System.out.println("PLNT: total:" + numPlants + " " + divide(sumPlant, numPlants));
-				System.out.println("ANML: total:" + numAnimals + " " + divide(sumAnimal, numAnimals));
-				System.out.println("CRNV: total:" + numCarnivores + " " + divide(sumCarnivore, numCarnivores));
-			} else {
-
-			 //CSV
-//			 String output = turns + ", " + sumEnergy + ", ";
-//			 String animalOut = "";
-//			 String plantOut = "";
-//			 if(numAnimals > 0){
-//			 animalOut = numAnimals + ", " + sumAnimalAge/numAnimals + ", " +
-//			 SUM_ANIMAL_ENERGY/numAnimals + ", " +
-//			 SUM_ENERGY_AT_START/numAnimals + ", " +
-//			 SUM_ENERGY_LOST_PER_TURN/numAnimals + ", " +
-//			 SUM_ENERGY_NEEDED_TO_MOVE/numAnimals + ", " +
-//			 SUM_ENERGY_USED_TO_MOVE/numAnimals + ", " +
-//			 SUM_ENERGY_NEEDED_TO_SPLIT/numAnimals + ", ";
-//			 } else {
-//			 animalOut = " , , , , , , ,";
-//			 }
-//			 if(numPlants > 0){
-//			 plantOut = numPlants + ", " + sumPlantAge/numPlants + ", " +
-//			 SUM_PLANT_ENERGY/numPlants + ", "+
-//			 SUM_PLANT_ENERGY_AT_START/numPlants + ", " +
-//			 SUM_ENERGY_GAINED_PER_TURN/numPlants + ", " +
-//			 SUM_ENERGY_NEEDED_TO_GROW/numPlants + ", " + ", ";
-//			 } else {
-//			 plantOut = " , , , , , ,";
-//			 }
-//			
-//			 System.out.println(output + plantOut + animalOut);
-			}
+			// CSV
+			// String output = turns + ", " + sumEnergy + ", ";
+			// String animalOut = "";
+			// String plantOut = "";
+			// if(numAnimals > 0){
+			// animalOut = numAnimals + ", " + sumAnimalAge/numAnimals + ", " +
+			// SUM_ANIMAL_ENERGY/numAnimals + ", " +
+			// SUM_ENERGY_AT_START/numAnimals + ", " +
+			// SUM_ENERGY_LOST_PER_TURN/numAnimals + ", " +
+			// SUM_ENERGY_NEEDED_TO_MOVE/numAnimals + ", " +
+			// SUM_ENERGY_USED_TO_MOVE/numAnimals + ", " +
+			// SUM_ENERGY_NEEDED_TO_SPLIT/numAnimals + ", ";
+			// } else {
+			// animalOut = " , , , , , , ,";
+			// }
+			// if(numPlants > 0){
+			// plantOut = numPlants + ", " + sumPlantAge/numPlants + ", " +
+			// SUM_PLANT_ENERGY/numPlants + ", "+
+			// SUM_PLANT_ENERGY_AT_START/numPlants + ", " +
+			// SUM_ENERGY_GAINED_PER_TURN/numPlants + ", " +
+			// SUM_ENERGY_NEEDED_TO_GROW/numPlants + ", " + ", ";
+			// } else {
+			// plantOut = " , , , , , ,";
+			// }
+			//
+			// System.out.println(output + plantOut + animalOut);
 
 		}
 
 		System.out.println("ERROR! EXITED LOOP!");
+
 	}
 
 	public static long getTime() {
 		return System.currentTimeMillis();
 	}
 
-	private static Map<String, Integer> sum(Map<String, Integer> map1, Map<String, Integer> map2) {
-		Map<String, Integer> result = new HashMap<String, Integer>();
-		result.putAll(map1);
-		for (String key : map2.keySet()) {
-			Integer value = result.get(key);
-			if (value != null) {
-				Integer newValue = value + map2.get(key);
-				result.put(key, newValue);
-			} else {
-				result.put(key, map2.get(key));
+	public static void drawWalls(int dimensions) {
+		for (int i = 0; i < dimensions / 1.5; i++) {
+			int ranX = rand.nextInt(board.getWidth());
+			int ranY = rand.nextInt(board.getHeigth());
+			// if (i <= dimensions/4) {
+			for (int x = 0; x < dimensions / 8; x++) {
+				for (int y = 0; y < dimensions / 8; y++) {
+					board.setCell(ranX + x, ranY + y, new Wall(board, 0, 0));
+				}
+			} // else {
+				// for (int j = 0; j < dimensions/4; j++)
+				// board.setCell(ranX + j, ranY + j, new Wall(0, 0));
+				// }
+		}
+	}
+
+	public static void killAllPlants() {
+		System.out.println("=============================================\nKilling all plants");
+		int counter = 0;
+		
+		for (int i = 0; i < board.getNumCells(); i++) {
+			Cell cell = board.getCell(i);
+			if (cell.getType().equals("plant")) {
+				board.setCell(i, new Cell(board, 0, 0));
+				counter++;
 			}
 		}
-		return result;
+		
+		System.out.println("Killed " + counter);
 	}
 
-	private static Map<String, Integer> divide(Map<String, Integer> map, float divisor) {
-		for (String key : map.keySet()) {
-			map.put(key, (int) (map.get(key) / divisor));
+	public static void printToConsole(){
+		int numPlants = 0;
+			int[] avgPlantDNA = Plant.getDNAEmpty();
+		
+		int numAnimals = 0;
+			int[] avgAnimalDNA = Animal.getDNAEmpty();
+		
+		int numCarnivores = 0;
+			int[] avgCarnivoreDNA = Animal.getDNAEmpty();
+
+		for (int i = 0; i < board.getNumCells(); i++) {
+			Cell cell = board.getCell(i);
+			if (cell.getType().equals("plant")) { // if is plant
+				numPlants++;
+				avgPlantDNA = addDNA(avgPlantDNA, cell.getDNA());
+			}
+			if (cell.getType().equals("animal")) { // if is animal
+				numAnimals++;
+				avgAnimalDNA = addDNA(avgAnimalDNA, cell.getDNA());
+			}
+			if (cell.getType().equals("carnivore")) { // if is carnivore
+				numCarnivores++;
+				avgCarnivoreDNA = addDNA(avgCarnivoreDNA, cell.getDNA());
+			}
+
+		}	
+		
+		//find averages
+		avgPlantDNA = divideDNA(avgPlantDNA, numPlants);
+		avgAnimalDNA = divideDNA(avgAnimalDNA, numAnimals);
+		avgCarnivoreDNA = divideDNA(avgCarnivoreDNA, numCarnivores);
+		
+		
+		System.out.println("TURN " + turns + "--------------------");
+		System.out.println("      PLNT: total:" + numPlants + "   " + printDNA(avgPlantDNA, Plant.getDNALabel()));
+		System.out.println("      ANML: total:" + numAnimals + "   " + printDNA(avgAnimalDNA, Animal.getDNALabel()));
+		System.out.println("      CRNV: total:" + numCarnivores + "   " + printDNA(avgCarnivoreDNA, Animal.getDNALabel()));
+	}
+	
+	private static int[] addDNA(int a[], int b[]){
+		for(int i = 0; i < a.length; i++){
+			a[i] += b[i];
 		}
-		return map;
+		
+		return a;
 	}
-
+	
+	private static int[] divideDNA(int a[], int b){
+		if(b == 0) b = 1;
+		
+		for(int i = 0; i < a.length; i++){
+			a[i] /= b;
+		}
+		
+		return a;
+	}
+	
+	private static String printDNA(int dna[], String label[]){
+		String out = "";
+		for(int i =0; i < dna.length; i ++){
+			out += label[i] + ": " + dna[i] + "  ";
+		}
+		
+		return out;
+	}
 }

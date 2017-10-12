@@ -67,8 +67,6 @@ public class Animal extends Cell {
 	private void move(){
 		int destX = getX() + (rand.nextInt(3)-1);
 		int destY =  getY() + (rand.nextInt(3)-1);
-		System.out.println("X: " + getX() + "  Y: " + getY());
-		System.out.println("destX:  " + destX + "  destY: " + destY);
 		
 		if(canIEat(this.getCanEat(), board.getCell(destX, destY).getType())){
 			changeEnergy(board.getCell(destX, destY).getEnergy());
@@ -230,5 +228,18 @@ public class Animal extends Cell {
 		out += "\nTeeth: " + getTeeth();
 		
 		return out;
+	}
+	
+	public int[] getDNA(){
+		int dna[] = {getEnergy(), getAge(), getEnergyPerTurn(), getEnergyNeededMove(), getEnergyUsedMove(), getEnergyNeededSplit(), getEnergyStart(), getTeeth()};
+		return dna;
+	}
+	
+	public static String[] getDNALabel(){
+		return new String[]{"Energy", "Age", "Energy per turn", "Energy needed move", "Energy used move", "Energy split", "Energy of child", "Teeth"};
+	}
+	
+	public static int[] getDNAEmpty(){
+		return new int[]{0, 0, 0, 0, 0, 0, 0, 0};
 	}
 }
