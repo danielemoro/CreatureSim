@@ -19,12 +19,12 @@ public class CreatureSimWeb implements EntryPoint {
 	Timer timer;
 
 	protected static Board board;
-	public static int deltaTime = 300;
+	public static int deltaTime = 100;
 	static Random rand;
 	static Label debug;
 	static int canvasHeight = 1000;
 	static int canvasWidth = 1000;
-	static final int boardDimensions = 40;
+	static final int boardDimensions = 100;
 
 	private static final String SERVER_ERROR = "An error occurred while "
 			+ "attempting to contact the server. Please check your network " + "connection and try again.";
@@ -94,7 +94,7 @@ public class CreatureSimWeb implements EntryPoint {
 				Color currColor = board.getCell(c, r).getColor();
 				ctx.setFillStyle(CssColor.make(currColor.getR(), currColor.getG(), currColor.getB()));
 				
-				ctx.fillRect(r * widthx + 2, c * widthy + 2, widthx - 4, widthy - 4);
+				ctx.fillRect(r * widthx + 2, c * widthy + 2, widthx - 2, widthy - 2);
 			}
 		}
 	}

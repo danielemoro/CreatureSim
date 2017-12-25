@@ -17,6 +17,9 @@ public class Animal extends Cell {
 	private int energyNeededSplit;
 		protected final int ENERGY_NEEDED_SPLIT_MIN = 0;
 		protected final int ENERGY_NEEDED_SPLIT_MAX = Integer.MAX_VALUE;
+	private int armor;
+		protected final int ARMOR_MIN = 0;
+		protected final int ARMOR_MAX = 3000;
 	private int teeth;
 		private final int TEETH_NEEDED_CARNIVORE = 100;
 		private final int TEETH_MIN = -999;
@@ -32,6 +35,7 @@ public class Animal extends Cell {
 		this.setEnergyNeededMove(300);
 		this.setEnergyUsedMove(-100);
 		this.setEnergyNeededSplit(4000);
+		this.setArmor(10);
 		this.setTeeth(0);
 		this.setCanEat(new String[]{"nothing", "plant"});
 		this.setType("animal");
@@ -48,6 +52,9 @@ public class Animal extends Cell {
 			
 			//update energy based on turn
 			this.changeEnergy(this.getEnergyPerTurn());
+			if(this.getType().equals("carnivore")){
+				changeEnergy(this.getEnergyPerTurn()*2);
+			}
 			
 			//move
 			if(this.getEnergy() > this.getEnergyNeededMove()){
@@ -69,7 +76,14 @@ public class Animal extends Cell {
 		int destY =  getY() + (rand.nextInt(3)-1);
 		
 		if(canIEat(this.getCanEat(), board.getCell(destX, destY).getType())){
-			changeEnergy(board.getCell(destX, destY).getEnergy());
+			if(board.getCell(destX, destY).getType().equals("plant") && this.getType().equals("carnivore")){
+				
+			} else if(this.getType().equals("carnivore")){
+				changeEnergy((int) (board.getCell(destX, destY).getEnergy() * (1.0-getArmor())));
+			} else {
+				changeEnergy(board.getCell(destX, destY).getEnergy());
+			}
+			
 			board.move(getX(), getY(), destX, destY);
 			setX(destX);
 			setY(destY);
@@ -85,17 +99,24 @@ public class Animal extends Cell {
 			int destX = getX() + (rand.nextInt(3)-1);
 			int destY = getY() + (rand.nextInt(3)-1);
 			if(canIEat(this.getCanEat(), board.getCell(destX, destY).getType())){
-				changeEnergy(board.getCell(destX, destY).getEnergy());
+				if(board.getCell(destX, destY).getType().equals("plant") && this.getType().equals("carnivore")){
+					
+				} else if(this.getType().equals("carnivore")){
+					changeEnergy((int) (board.getCell(destX, destY).getEnergy() - getArmor()));
+				} else {
+					changeEnergy(board.getCell(destX, destY).getEnergy());
+				}
 				
 				Animal child = new Animal(board, destX, destY, lastTurn);
 				
 				child.setEnergy(this.getEnergyStart());
-				child.setEnergyStart(this.getEnergyStart() + (rand.nextInt(50)-25));
-				child.setEnergyPerTurn(this.getEnergyPerTurn() + (rand.nextInt(50)-25));
-				child.setEnergyNeededMove(this.getEnergyNeededMove() + (rand.nextInt(50)-25));
-				child.setEnergyUsedMove(this.getEnergyUsedMove() + (rand.nextInt(50)-25));
-				child.setEnergyNeededSplit(this.getEnergyNeededSplit() + (rand.nextInt(50)-25));
-				child.setTeeth(this.getTeeth() + (rand.nextInt(50)-25));
+				child.setEnergyStart(this.getEnergyStart() + (rand.nextInt(51)-25));
+				child.setEnergyPerTurn(this.getEnergyPerTurn() + (rand.nextInt(51)-25));
+				child.setEnergyNeededMove(this.getEnergyNeededMove() + (rand.nextInt(51)-25));
+				child.setEnergyUsedMove(this.getEnergyUsedMove() + (rand.nextInt(51)-25));
+				child.setEnergyNeededSplit(this.getEnergyNeededSplit() + (rand.nextInt(51)-25));
+				child.setArmor(this.getArmor() + (rand.nextInt(51)-25));
+				child.setTeeth(this.getTeeth() + (rand.nextInt(51)-25));
 					
 				this.changeEnergy(-this.getEnergyStart());
 				board.setCell(child.getX(), child.getY(), child);
@@ -110,7 +131,7 @@ public class Animal extends Cell {
 		brightness = Math.abs(brightness);
 		brightness = Math.min(brightness, 1);
 		//String newColor = yellow;
-		Color newColor = new Color(brightness,brightness,0.1f);
+		Color newColor = new Color(brightness,brightness,((float) getArmor()/(float) ARMOR_MAX));
 		
 		//red if carnivore
 		if(this.getType().equals("carnivore")){
@@ -191,6 +212,20 @@ public class Animal extends Cell {
 		}
 	}
 
+	public int getArmor() {
+		return armor;
+	}
+
+	public void setArmor(int armor) {
+		if(armor < ARMOR_MIN){
+			this.armor = ARMOR_MIN;
+		} else if (armor > ARMOR_MAX){
+			this.armor = ARMOR_MAX;
+		} else {
+			this.armor = armor;
+		}
+	}
+
 	public int getTeeth() {
 		return teeth;
 	}
@@ -206,7 +241,7 @@ public class Animal extends Cell {
 		
 		//check if is carnivore
 		if(this.teeth >= TEETH_NEEDED_CARNIVORE){
-			this.setCanEat(new String[]{"nothing", "animal"});
+			this.setCanEat(new String[]{"nothing", "animal", "plant"});
 			this.setType("carnivore");
 		}
 		if(this.teeth <= TEETH_NEEDED_CARNIVORE){
