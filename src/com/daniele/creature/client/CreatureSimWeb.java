@@ -94,7 +94,7 @@ public class CreatureSimWeb implements EntryPoint {
 				Color currColor = board.getCell(c, r).getColor();
 				ctx.setFillStyle(CssColor.make(currColor.getR(), currColor.getG(), currColor.getB()));
 				
-				ctx.fillRect(r * widthx + 2, c * widthy + 2, widthx - 2, widthy - 2);
+				ctx.fillRect(r * widthx, c * widthy, widthx, widthy);
 			}
 		}
 	}
