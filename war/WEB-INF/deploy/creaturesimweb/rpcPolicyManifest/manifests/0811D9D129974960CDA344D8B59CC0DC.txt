@@ -1,0 +1,2 @@
+serviceClass: com.daniele.creature.client.GreetingService
+path: 53717A88F47F9D1D96C83F81A30961DD.gwt.rpc
