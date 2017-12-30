@@ -17,9 +17,9 @@ public class Animal extends Cell {
 	private int energyNeededSplit;
 		protected final int ENERGY_NEEDED_SPLIT_MIN = 0;
 		protected final int ENERGY_NEEDED_SPLIT_MAX = Integer.MAX_VALUE;
-	private int armor;
-		protected final int ARMOR_MIN = 0;
-		protected final int ARMOR_MAX = 3000;
+	private double armor;
+		protected final double ARMOR_MIN = 0.0;
+		protected final double ARMOR_MAX = 2.0;
 	private int teeth;
 		private final int TEETH_NEEDED_CARNIVORE = 100;
 		private final int TEETH_MIN = -999;
@@ -29,13 +29,13 @@ public class Animal extends Cell {
 	public Animal (Board board, int x, int y, long turn) {
 		super(board, x, y, turn);
 		
-		this.setEnergyStart(3000);
+		this.setEnergyStart(5000);
 		this.setEnergy(this.getEnergyStart());
 		this.setEnergyPerTurn(-100);
 		this.setEnergyNeededMove(300);
 		this.setEnergyUsedMove(-100);
 		this.setEnergyNeededSplit(4000);
-		this.setArmor(10);
+		this.setArmor(0);
 		this.setTeeth(0);
 		this.setCanEat(new String[]{"nothing", "plant"});
 		this.setType("animal");
@@ -102,7 +102,7 @@ public class Animal extends Cell {
 				if(board.getCell(destX, destY).getType().equals("plant") && this.getType().equals("carnivore")){
 					
 				} else if(this.getType().equals("carnivore")){
-					changeEnergy((int) (board.getCell(destX, destY).getEnergy() - getArmor()));
+					changeEnergy((int) (board.getCell(destX, destY).getEnergy() * (1.0-getArmor())));
 				} else {
 					changeEnergy(board.getCell(destX, destY).getEnergy());
 				}
@@ -115,7 +115,7 @@ public class Animal extends Cell {
 				child.setEnergyNeededMove(this.getEnergyNeededMove() + (rand.nextInt(51)-25));
 				child.setEnergyUsedMove(this.getEnergyUsedMove() + (rand.nextInt(51)-25));
 				child.setEnergyNeededSplit(this.getEnergyNeededSplit() + (rand.nextInt(51)-25));
-				child.setArmor(this.getArmor() + (rand.nextInt(51)-25));
+				child.setArmor(this.getArmor() + ((double) (rand.nextInt(21)-10) / 100.0));
 				child.setTeeth(this.getTeeth() + (rand.nextInt(51)-25));
 					
 				this.changeEnergy(-this.getEnergyStart());
@@ -127,11 +127,11 @@ public class Animal extends Cell {
 	}
 	
 	private Color calculateColor(){
-		float brightness = Math.min(getEnergy()/(getEnergyStart()*1.2f),1);
+		float brightness = (float) getEnergy()/ (float) energyStart ;
 		brightness = Math.abs(brightness);
-		brightness = Math.min(brightness, 1);
+		brightness = Math.min(brightness, 0.9f);
 		//String newColor = yellow;
-		Color newColor = new Color(brightness,brightness,((float) getArmor()/(float) ARMOR_MAX));
+		Color newColor = new Color(brightness,brightness, 0);//((float) getArmor()/(float) ARMOR_MAX));
 		
 		//red if carnivore
 		if(this.getType().equals("carnivore")){
@@ -212,11 +212,11 @@ public class Animal extends Cell {
 		}
 	}
 
-	public int getArmor() {
+	public double getArmor() {
 		return armor;
 	}
 
-	public void setArmor(int armor) {
+	public void setArmor(double armor) {
 		if(armor < ARMOR_MIN){
 			this.armor = ARMOR_MIN;
 		} else if (armor > ARMOR_MAX){

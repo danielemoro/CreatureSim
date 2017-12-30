@@ -7,7 +7,7 @@ public class Plant extends Cell{
 	private int energyStart;
 	private int energyPerTurn;
 		protected final int ENERGY_PER_TURN_MIN = 0;
-		protected final int ENERGY_PER_TURN_MAX = 500;
+		protected final int ENERGY_PER_TURN_MAX = 10;
 	private int energyNeededGrow;
 		protected final int ENERGY_NEEDED_GROW_MIN = 0;
 		protected final int ENERGY_NEEDED_GROW_MAX = Integer.MAX_VALUE;
@@ -66,9 +66,9 @@ public class Plant extends Cell{
 				if(this.canIEat(this.getCanEat(), board.getCell(currX, currY).getType())){					
 					Plant child = new Plant(board, currX, currY, lastTurn);
 					child.setEnergy(this.getEnergyStart());
-					child.setEnergyStart(this.getEnergyStart() + (rand.nextInt(50)-25));
-					child.setEnergyPerTurn(this.getEnergyPerTurn() + (rand.nextInt(50)-25));
-					child.setEnergyNeededGrow(this.getEnergyNeededGrow() + (rand.nextInt(50)-25));
+					child.setEnergyStart(this.getEnergyStart() + (rand.nextInt(51)-25));
+					child.setEnergyPerTurn(this.getEnergyPerTurn() + (rand.nextInt(51)-25));
+					child.setEnergyNeededGrow(this.getEnergyNeededGrow() + (rand.nextInt(51)-25));
 					
 					board.setCell(child.getX(), child.getY(), child);
 					
